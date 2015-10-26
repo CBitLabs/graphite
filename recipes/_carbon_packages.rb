@@ -25,11 +25,24 @@ python_pip 'Twisted' do
   version lazy { node['graphite']['twisted_version'] }
 end
 
-python_pip 'carbon' do
+%w{carbon whisper}.each do |package|
+  python_pip "#{package}" do
+    package_name lazy {
+      node['graphite']['package_names']["#{package}"][node['graphite']['install_type']]
+    }
+    version lazy {
+      node['graphite']['install_type'] == 'package' ? node['graphite']['version'] : nil
+    }
+    options "--install-option='--prefix=/ebs/graphite' --install-option='--install-lib=/ebs/graphite/lib'"
+  end
+end
+
+python_pip 'graphite_web' do
   package_name lazy {
-    node['graphite']['package_names']['carbon'][node['graphite']['install_type']]
+    node['graphite']['package_names']['graphite_web'][node['graphite']['install_type']]
   }
   version lazy {
     node['graphite']['install_type'] == 'package' ? node['graphite']['version'] : nil
   }
+  options "--install-option='--prefix=/ebs/graphite' --install-option='--install-lib=/ebs/graphite/webapp'"
 end
